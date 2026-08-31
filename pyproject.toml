@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "Every purpose discord bot"                      
 requires-python = ">=3.14" 
 dependencies = [
-    
+    "discord.py>=2.7.1",
+    "pillow>=12.3.0",
+    "python-dotenv>=1.2.3"
 ]
 
