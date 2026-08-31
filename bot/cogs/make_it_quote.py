@@ -6,12 +6,21 @@ from discord.app_commands import Choice
 
 
 class MakeItQuote(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+        self.quote_ctx_menu = app_commands.ContextMenu(
+            name="Quotify!",
+            callback=self.quotify_context_menu
+        )
+        self.bot.tree.add_command(self.quote_ctx_menu)
+
+    async def cog_unload(self):
+        self.bot.tree.remove_command(self.quote_ctx_menu.name, type=self.quote_ctx_menu.type)
 
     @app_commands.command(name="quotify", description="Make a quote of given user and text")
     @app_commands.describe(
-        text="Text of the quote",
+        text="Text of the quote (if you want replied message to be quoted, do not fill)",
         user="User that said quote",
         custom_user="If user does not appear on the server you can write it down",
         custom_image="Custom image that will be rendered. If None then it will take user picture profile. If user is not specified, then default image will be rendered",
@@ -31,43 +40,46 @@ class MakeItQuote(commands.Cog):
     ):
         await interaction.response.defer()
 
-        # filter data to render
-        author_image_url = None
+        author_image= None
+        if custom_image:
+            if custom_image.content_type and custom_image.content_type.startswith("image/"):
+                author_image = custom_image
+            else:
+                await interaction.followup.send("File is not an image", ephemeral=True)
+                return 
+
         if user:
             author = user.name
-            author_image_url = user.display_avatar.url
+            if not author_image:
+                author_image = user.display_avatar
         elif custom_user:
             author = custom_user
         else:
-            author = "Anonymous"
+            author = "Anonymous"    
 
-        if custom_image:
-            if custom_image.content_type and custom_image.content_type.startswith("image/"):
-                author_image_url = custom_image.url
-            else:
-                await interaction.followup.send("File is not an image", ephemeral=True)
-                return     
-
-        # render an image
-        image_style = None
-        if style:
-            image_style = style.value
-            
-
-        # generated_image = generate_image_quote(text, author, author_image_url, image_style)
+        generated_image = await generate_image_quote(text, author, author_image, style.value if style else None)
+        await interaction.followup.send(file=generated_image)
 
 
-        # send back on server 
+    async def quotify_context_menu(self, interaction: discord.Interaction, message: discord.Message):
+        await interaction.response.defer()
+
+        text = message.content
+        author = message.author.display_name
+        author_image = message.author.display_avatar
+        generated_image = await generate_image_quote(text, author, author_image, 1)
+
+        await interaction.followup.send(file=generated_image)   
 
 
-        embed = discord.Embed(
-            color=discord.Color.blue()
-        )
-        # embed.set_author(name=author, icon_url=author_image_url)
-        if author_image_url:
-            embed.set_image(url=author_image_url)
-        await interaction.followup.send(embed=embed)
-        # await interaction.response.send_message(f"Quotifying... {text}, {author}, {author_image_url}, {style}")
+    async def cog_app_command_error(self, interactions: discord.Interaction, error: app_commands.AppCommandError):
+        original_error = getattr(error, "original", error)
+        msg = f"Error: {original_error}"
+        if interactions.response.is_done():
+            await interactions.followup.send(msg, ephemeral=True)
+        else:
+            await interactions.response.send_message(msg, ephemeral=True)
+
 
 async def setup(bot):
     await bot.add_cog(MakeItQuote(bot))
