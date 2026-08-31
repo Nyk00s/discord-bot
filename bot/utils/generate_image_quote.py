@@ -4,7 +4,6 @@ import asyncio
 from typing import Literal
 from PIL import Image, ImageDraw, ImageFont
 from concurrent.futures import ThreadPoolExecutor
-import aiohttp
 import discord
 import uuid
 
@@ -97,7 +96,7 @@ def _draw_text_on_new_image(text: str, author: str) -> Image.Image:
     wrapped_text = _wrap_text(text, text_font, width - (padding * 2), draw)
 
     center_x = width / 2
-    center_y = height * 0.45
+    center_y = height * 0.4
 
     draw.multiline_text(
         (center_x, center_y),
