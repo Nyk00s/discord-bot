@@ -64,7 +64,7 @@ class MakeItQuote(commands.Cog):
     async def quotify_context_menu(self, interaction: discord.Interaction, message: discord.Message):
         await interaction.response.defer()
 
-        text = message.content
+        text = message.clean_content
         author = message.author.display_name
         author_image = message.author.display_avatar
         generated_image = await generate_image_quote(text, author, author_image, 1)

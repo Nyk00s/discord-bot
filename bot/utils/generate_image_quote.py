@@ -89,14 +89,15 @@ def _draw_text_on_new_image(text: str, author: str) -> Image.Image:
     image_for_text = Image.new("RGBA", (width, height), 'black')
     draw = ImageDraw.Draw(image_for_text)
 
-    text_font = ImageFont.truetype(FONT_PATH, size=20)
-    author_font = ImageFont.truetype(FONT_PATH, size=15)
+    text_font = ImageFont.truetype(FONT_PATH, size=30)
+    author_font = ImageFont.truetype(FONT_PATH, size=20)
     text_color = (255, 255, 255, 255)
 
     wrapped_text = _wrap_text(text, text_font, width - (padding * 2), draw)
 
     center_x = width / 2
-    center_y = height * 0.4
+    # TODO: better logic of text alignment
+    center_y = height * 0.35
 
     draw.multiline_text(
         (center_x, center_y),
