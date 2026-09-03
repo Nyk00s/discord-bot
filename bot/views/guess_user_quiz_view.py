@@ -1,5 +1,5 @@
 import discord
-import asyncio
+
 
 class GuessUserQuizView(discord.ui.View):
     def __init__(self, authors_list: list[discord.User], quiz_message: discord.Message, timeout=20.0):
@@ -8,10 +8,8 @@ class GuessUserQuizView(discord.ui.View):
         self.quiz_message = quiz_message
         self.time_left = timeout
         self.message: discord.Message = None
-        self.timer_task = None
         self.votes: dict[str, int] = {}
         self.given_votes: set = set()
-        self.accepting_votes = True
 
         for author in self.authors_list:
             custom_id = str(author.id)
@@ -30,57 +28,15 @@ class GuessUserQuizView(discord.ui.View):
             content=self._get_formatted_content(),
             view=self
         )
-        self.timer_task = asyncio.create_task(self._update_timer())
-
-    async def _update_timer(self):
-        while self.time_left > 0 and not self.is_finished():
-            await asyncio.sleep(1)
-            self.time_left -= 1
-
-            if self.message and self.time_left % 2 == 0 and self.time_left > 0:
-                try:
-                    await self.message.edit(
-                        content=self._get_formatted_content(),
-                        view=self
-                    )
-                except discord.NotFound:
-                    break
-
-        if not self.is_finished():
-            await self._end_quiz()
-
-    async def _end_quiz(self):
-
-        self.accepting_votes = False
-
-        for item in self.children:
-            item.disabled = True
-
-        await asyncio.sleep(2.0)
-
-        self.stop()
-        if self.message:
-            try:
-                await self.message.edit(
-                    content=self._get_formatted_content(is_ended=True),
-                    view=None
-                )
-            except discord.NotFound:
-                pass
 
     async def handle_button_click(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        if not self.accepting_votes:
-            return
         if interaction.user.id in self.given_votes:
             return
         self.votes[interaction.data["custom_id"]] += 1
         self.given_votes.add(interaction.user.id)
 
     async def on_timeout(self):
-        self.accepting_votes = False
-        if self.timer_task and not self.timer_task.done():
-            self.timer_task.cancel()
 
         for item in self.children:
             item.disabled = True
@@ -108,8 +64,8 @@ class GuessUserQuizView(discord.ui.View):
         if not is_ended:
             return (
                 f"**Who is the author of given message?**\n"
-                f"**Time left: {self.time_left // 2}**\n"
-                f"(You cannot change your vote)\n\n"
+                f"**The quiz duration is: {self.time_left} sec**\n"
+                f"(If you choose answer, you cannot change your vote)\n\n"
                 f" > {text} \n{attachment_text}\n"
             )
         else:
