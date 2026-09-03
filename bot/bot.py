@@ -24,6 +24,11 @@ class Bot(commands.Bot):
                 await self.load_extension(f'cogs.{filename[:-3]}')
 
         guild_id_object = discord.Object(id=GUILD_ID)
+
+        # clearing old commands
+        # self.tree.clear_commands(guild=guild_id_object)
+        # await self.tree.sync(guild=guild_id_object)
+
         self.tree.copy_global_to(guild=guild_id_object)
         await self.tree.sync(guild=guild_id_object)
 

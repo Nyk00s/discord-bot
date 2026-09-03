@@ -4,6 +4,7 @@ from discord.ext import commands
 from datetime import datetime, timezone
 import random
 from views import GuessUserQuizView
+import logging
 
 class GuessUser(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -15,7 +16,6 @@ class GuessUser(commands.Cog):
         try:
             async for message in channel.history(limit=30, around=random_date):
 
-                print(f"text: {message.content}, mention: {len(message.mentions)}, attachments: {len(message.attachments)}")
                 if message.author.bot or message.content.startswith(('!', '/')):
                     continue
 
@@ -38,7 +38,7 @@ class GuessUser(commands.Cog):
                     continue
                 messages.append(message)
         except discord.Forbidden:
-            print("forbidden")
+            logging.warning("Bot doesn't have permission to fetch messages")
         return messages
 
 
