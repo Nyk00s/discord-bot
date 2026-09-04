@@ -86,6 +86,7 @@ def _wrap_text(text: str, font: ImageFont.FreeTypeFont, max_width, draw: ImageDr
 def _draw_text_on_new_image(text: str, author: str) -> Image.Image:
     padding = 20
     width, height = 512, 512
+    author_gap = 20
     image_for_text = Image.new("RGBA", (width, height), 'black')
     draw = ImageDraw.Draw(image_for_text)
 
@@ -94,32 +95,36 @@ def _draw_text_on_new_image(text: str, author: str) -> Image.Image:
     text_color = (255, 255, 255, 255)
 
     wrapped_text = _wrap_text(text, text_font, width - (padding * 2), draw)
+    author_text = f'~ {author}'
 
-    center_x = width / 2
-    # TODO: better logic of text alignment
-    center_y = height * 0.35
+    text_bbox = draw.multiline_textbbox((0, 0), wrapped_text, font=text_font, align="center")
+    author_bbox = draw.textbbox((0, 0), author_text, font=author_font)
+
+    text_height = text_bbox[3] - text_bbox[1]
+    author_height = author_bbox[3] - author_bbox[1]
+    total_block_height = text_height + author_height + author_gap
+
+    start_y = (height - total_block_height) // 2
+    center_x = width // 2
+
 
     draw.multiline_text(
-        (center_x, center_y),
+        (center_x, start_y),
         wrapped_text,
         font=text_font,
         fill=text_color,
-        anchor="ma",
-        align='center'
+        align="center",
+        anchor="ma"
     )
 
-    text_bbox = draw.multiline_textbbox((center_x, center_y), wrapped_text, font=text_font, anchor="ma", align="center")
-    text_bottom_y = text_bbox[3]
-    spacing = 30
-    author_text = f"~ {author}"
+    author_y = start_y + text_height + author_gap
 
-    draw.text(
-        (center_x, text_bottom_y + spacing),
+    draw.multiline_text(
+        (center_x, author_y),
         author_text,
         font=author_font,
         fill=text_color,
-        anchor="ma",
-        align="center"
+        anchor="ma"
     )
     return image_for_text
 

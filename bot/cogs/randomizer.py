@@ -10,6 +10,7 @@ from datetime import timedelta
 RANDOMIZER_COMMAND_NAME=os.getenv("RANDOMIZER_COMMAND_NAME", "randomize")
 RANDOMIZER_MESSAGE=os.getenv("RANDOMIZER_MESSAGE", "randomized")
 RANDOMIZER_DESCRIPTION=os.getenv("RANDOMIZER_DESCRIPTION", "Randomize number")
+RANDOMIZER_SPECIAL_MESSAGE=os.getenv("RANDOMIZER_SPECIAL_MESSAGE", "Goodbye")
 
 class Randomizer(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -26,12 +27,12 @@ class Randomizer(commands.Cog):
         elif number == 100:
             await interaction.followup.send(f"@everyone {RANDOMIZER_MESSAGE} {number}%")
             try:
-                await interaction.user.timeout(timedelta(seconds=30))
+                await interaction.user.timeout(timedelta(seconds=60))
             except:
                 logging.warning("Bot doesn't have permission to time-out users, or user cannot be timed out")
             return
         else:
-            await interaction.followup.send(f"@everyone {RANDOMIZER_MESSAGE} {number}%")
+            await interaction.followup.send(f":rotating_light:@everyone {RANDOMIZER_MESSAGE} {number}% {RANDOMIZER_SPECIAL_MESSAGE}:rotating_light:")
 
 
 async def setup(bot: commands.Bot):
