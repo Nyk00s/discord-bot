@@ -10,6 +10,7 @@ import uuid
 executor = ThreadPoolExecutor(max_workers=4)
 FONT_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'assets', 'fonts', os.getenv("FONT"))
 ANONYMOUS_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'assets', 'images', 'anonymous.png')
+FONT_SIZE = 35
 
 
 def _apply_black_gradient_style_1(image: Image.Image) -> Image.Image:
@@ -90,19 +91,27 @@ def _draw_text_on_new_image(text: str, author: str) -> Image.Image:
     image_for_text = Image.new("RGBA", (width, height), 'black')
     draw = ImageDraw.Draw(image_for_text)
 
-    text_font = ImageFont.truetype(FONT_PATH, size=30)
-    author_font = ImageFont.truetype(FONT_PATH, size=20)
-    text_color = (255, 255, 255, 255)
+    current_size = FONT_SIZE
+    while current_size >= 20:
+        text_font = ImageFont.truetype(FONT_PATH, size=current_size)
+        author_font = ImageFont.truetype(FONT_PATH, size=max(12, current_size - 10))
+        text_color = (255, 255, 255, 255)
 
-    wrapped_text = _wrap_text(text, text_font, width - (padding * 2), draw)
-    author_text = f'~ {author}'
+        wrapped_text = _wrap_text(text, text_font, width - (padding * 2), draw)
+        author_text = f'~ {author}'
 
-    text_bbox = draw.multiline_textbbox((0, 0), wrapped_text, font=text_font, align="center")
-    author_bbox = draw.textbbox((0, 0), author_text, font=author_font)
+        text_bbox = draw.multiline_textbbox((0, 0), wrapped_text, font=text_font, align="center")
+        author_bbox = draw.textbbox((0, 0), author_text, font=author_font)
 
-    text_height = text_bbox[3] - text_bbox[1]
-    author_height = author_bbox[3] - author_bbox[1]
-    total_block_height = text_height + author_height + author_gap
+        text_height = text_bbox[3] - text_bbox[1]
+        author_height = author_bbox[3] - author_bbox[1]
+        total_block_height = text_height + author_height + author_gap
+        if total_block_height < height - padding * 2:
+            break
+        current_size -= 5
+    else:
+        raise Exception("Too many text")
+    
 
     start_y = (height - total_block_height) // 2
     center_x = width // 2

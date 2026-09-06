@@ -57,7 +57,12 @@ class MakeItQuote(commands.Cog):
         else:
             author = "Anonymous"    
 
-        generated_image = await generate_image_quote(text, author, author_image, style.value if style else None)
+        try:
+            generated_image = await generate_image_quote(text, author, author_image, style.value if style else None)
+        except Exception:
+            await interaction.followup.send("Given text has too many letters")
+            return
+        
         await interaction.followup.send(file=generated_image)
 
 
@@ -67,8 +72,11 @@ class MakeItQuote(commands.Cog):
         text = message.clean_content
         author = message.author.display_name
         author_image = message.author.display_avatar
-        generated_image = await generate_image_quote(text, author, author_image, 1)
-
+        try:
+            generated_image = await generate_image_quote(text, author, author_image, 1)
+        except Exception:
+            await interaction.followup.send("Too long quote", ephemeral=True)
+            return
         await interaction.followup.send(file=generated_image)   
 
 
