@@ -22,7 +22,6 @@ class Randomizer(commands.Cog):
 
     @app_commands.command(name=RANDOMIZER_COMMAND_NAME, description=RANDOMIZER_DESCRIPTION)
     async def randomize(self, interaction: discord.Interaction):
-        await interaction.response.defer()
 
         user = await self.user_repo.create_user_or_get(interaction.user.id, interaction.user.name)
 
@@ -30,9 +29,10 @@ class Randomizer(commands.Cog):
             user.randomizer_date = datetime.now()
             await self.user_repo.update(user)
         elif user.randomizer_date.date() == datetime.now().date():
-            await interaction.followup.send("You can use randomizer only once per day", ephemeral=True)
+            await interaction.response.send_message("You can use randomizer only once per day", ephemeral=True)
             return
-            
+
+        await interaction.response.defer()
         number = random.randint(0, 100)
         if 0 < number < 100:
             await interaction.followup.send(f"{interaction.user.mention} {RANDOMIZER_MESSAGE} {number}%")
