@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from utils import generate_image_quote
+from bot.utils import generate_image_quote
 from discord.app_commands import Choice
 
 

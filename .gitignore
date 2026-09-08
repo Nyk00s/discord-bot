@@ -220,3 +220,6 @@ __marimo__/
 # test things
 test.png 
 test.py
+
+# db
+*.db

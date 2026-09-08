@@ -3,7 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from datetime import datetime, timezone
 import random
-from views import GuessUserQuizView
+from bot.views import GuessUserQuizView
 import logging
 
 class GuessUser(commands.Cog):
