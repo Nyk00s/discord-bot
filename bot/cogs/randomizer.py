@@ -24,14 +24,14 @@ class Randomizer(commands.Cog):
     async def randomize(self, interaction: discord.Interaction):
 
         user = await self.user_repo.create_user_or_get(interaction.user.id, interaction.user.name)
-
-        if not user.randomizer_date:
-            user.randomizer_date = datetime.now()
+        today = datetime.now()
+        if not user.randomizer_date or user.randomizer_date.date() != today.date():
+            user.randomizer_date = today
             await self.user_repo.update(user)
-        elif user.randomizer_date.date() == datetime.now().date():
+        else:
             await interaction.response.send_message("You can use randomizer only once per day", ephemeral=True)
             return
-
+        
         await interaction.response.defer()
         number = random.randint(0, 100)
         if 0 < number < 100:

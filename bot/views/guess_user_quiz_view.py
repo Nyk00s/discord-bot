@@ -1,15 +1,22 @@
 import discord
-
+from bot.repositories import UserRepository
 
 class GuessUserQuizView(discord.ui.View):
-    def __init__(self, authors_list: list[discord.User], quiz_message: discord.Message, timeout=20.0):
+    def __init__(
+            self, 
+            authors_list: list[discord.User], 
+            quiz_message: discord.Message, 
+            user_repo: UserRepository, 
+            timeout=20.0
+        ):
         super().__init__(timeout=timeout)
         self.authors_list = authors_list
         self.quiz_message = quiz_message
         self.time_left = timeout
         self.message: discord.Message = None
         self.votes: dict[str, int] = {}
-        self.given_votes: set = set()
+        self.given_votes: set[tuple[int, str]] = set()
+        self.user_repo = user_repo
 
         for author in self.authors_list:
             custom_id = str(author.id)
@@ -33,8 +40,9 @@ class GuessUserQuizView(discord.ui.View):
         await interaction.response.defer()
         if interaction.user.id in self.given_votes:
             return
-        self.votes[interaction.data["custom_id"]] += 1
-        self.given_votes.add(interaction.user.id)
+        custom_id = interaction.data["custom_id"] 
+        self.votes[custom_id] += 1
+        self.given_votes.add((interaction.user.id, custom_id))
 
     async def on_timeout(self):
 
@@ -47,6 +55,7 @@ class GuessUserQuizView(discord.ui.View):
                     content=self._get_formatted_content(is_ended=True),
                     view=None
                 )
+                await self._award_points()
             except discord.NotFound:
                 pass
 
@@ -100,3 +109,10 @@ class GuessUserQuizView(discord.ui.View):
         result_list += f"\n**Total votes: {total_votes}**\n\n"
         final_fig += option_list + "\n" + result_list
         return final_fig
+
+    async def _award_points(self):
+        for voter, answer in self.given_votes:
+            if answer == str(self.quiz_message.author.id):
+                user = await self.user_repo.get_user(voter)
+                user.points += 10
+                await self.user_repo.update(user)

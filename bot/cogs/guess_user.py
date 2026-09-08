@@ -5,11 +5,14 @@ from datetime import datetime, timezone
 import random
 from bot.views import GuessUserQuizView
 import logging
+from bot.repositories import UserRepository
+from bot.database import AsyncSessionLocal
 
 class GuessUser(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, user_repo: UserRepository):
         self.bot = bot
         self.number_of_tries = 10
+        self.user_repo = user_repo
 
     async def _get_filtered_messages(self, channel: discord.TextChannel, random_date: datetime) -> list[discord.Message]:
         messages = []
@@ -68,11 +71,12 @@ class GuessUser(commands.Cog):
         if messages:
             target_message = random.choice(messages)
             timeout = 20
-            view = GuessUserQuizView(authors, target_message, timeout=timeout)
+            view = GuessUserQuizView(authors, target_message, self.user_repo ,timeout=timeout)
             await view.start_view(interaction)
             await view.wait()
         else:
             await interaction.followup.send("Algorithm wasn't able to create a quiz. Remember that at least 3 unique people have to write something on given channel", ephemeral=True)
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(GuessUser(bot))
+    user_repo = UserRepository(AsyncSessionLocal)
+    await bot.add_cog(GuessUser(bot, user_repo))
