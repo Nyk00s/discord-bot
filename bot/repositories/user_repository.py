@@ -17,13 +17,16 @@ class UserRepository:
 
     async def get_by_points(self, limit: int, desc=True) -> list[User]:
         async with self.session_factory() as session:
-            stmt = select(User).order_by(User.points.desc()).limit(limit)
+            order = User.points.desc() if desc else User.points.asc()
+            stmt = select(User).order_by(order).limit(limit)
             result = await session.execute(stmt)
-            return list(result.all())
+            return list(result.scalars().all())
 
     async def create_user_or_get(self, user_id, username) -> User:
         async with self.session_factory() as session:
-            user = await self.get_user(user_id)
+            stmt = select(User).where(User.discord_id == user_id)
+            result = await session.execute(stmt)
+            user = result.scalar_one_or_none()
             if not user:
                 user = User(discord_id=user_id, user_name=username)
                 session.add(user)
@@ -33,7 +36,7 @@ class UserRepository:
 
     async def update(self, user: User) -> User:
         async with self.session_factory() as session:
-            user = await session.merge(user)
+            merged_user = await session.merge(user)
             await session.commit()
-            await session.refresh(user)
-            return user
+            await session.refresh(merged_user)
+            return merged_user
