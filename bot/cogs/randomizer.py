@@ -38,14 +38,14 @@ class Randomizer(commands.Cog):
             await interaction.followup.send(f"{interaction.user.mention} {RANDOMIZER_MESSAGE} {number}%")
             return
         elif number == 100:
-            await interaction.followup.send(f"@everyone {RANDOMIZER_MESSAGE} {number}%")
+            await interaction.followup.send(f":rotating_light:@everyone {RANDOMIZER_MESSAGE} {number}% {RANDOMIZER_SPECIAL_MESSAGE}:rotating_light:")
             try:
                 await interaction.user.timeout(timedelta(seconds=60))
             except:
                 logging.warning("Bot doesn't have permission to time-out users, or user cannot be timed out")
             return
         else:
-            await interaction.followup.send(f":rotating_light:@everyone {RANDOMIZER_MESSAGE} {number}% {RANDOMIZER_SPECIAL_MESSAGE}:rotating_light:")
+            await interaction.followup.send(f"@everyone {RANDOMIZER_MESSAGE} {number}%")
 
 
 async def setup(bot: commands.Bot):

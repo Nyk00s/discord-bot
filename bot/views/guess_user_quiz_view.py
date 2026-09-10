@@ -113,6 +113,6 @@ class GuessUserQuizView(discord.ui.View):
     async def _award_points(self):
         for voter, answer in self.given_votes:
             if answer == str(self.quiz_message.author.id):
-                user = await self.user_repo.get_user(voter)
+                user = await self.user_repo.create_user_or_get(voter)
                 user.points += 10
                 await self.user_repo.update(user)
