@@ -22,7 +22,7 @@ class Randomizer(commands.Cog):
         self.bot = bot
         self.user_repo = user_repository
 
-    async def give_role(interaction: discord.Interaction, is_100=True):
+    async def give_role(self, interaction: discord.Interaction, is_100=True):
         role100 = discord.utils.get(interaction.guild.roles, RANDOMIZER_100_ROLE)
         role0 = discord.utils.get(interaction.guild.roles, RANDOMIZER_0_ROLE)
 

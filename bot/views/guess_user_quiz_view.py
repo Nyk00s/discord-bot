@@ -42,7 +42,7 @@ class GuessUserQuizView(discord.ui.View):
             return
         custom_id = interaction.data["custom_id"] 
         self.votes[custom_id] += 1
-        self.given_votes.add((interaction.user.id, custom_id))
+        self.given_votes.add((interaction.user.id, interaction.user.name, custom_id))
 
     async def on_timeout(self):
 
@@ -111,8 +111,8 @@ class GuessUserQuizView(discord.ui.View):
         return final_fig
 
     async def _award_points(self):
-        for voter, answer in self.given_votes:
+        for voter_id, voter_name, answer in self.given_votes:
             if answer == str(self.quiz_message.author.id):
-                user = await self.user_repo.create_user_or_get(voter)
+                user = await self.user_repo.create_user_or_get(voter_id, voter_name)
                 user.points += 10
                 await self.user_repo.update(user)
