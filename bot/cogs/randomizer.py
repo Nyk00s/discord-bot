@@ -23,8 +23,8 @@ class Randomizer(commands.Cog):
         self.user_repo = user_repository
 
     async def give_role(self, interaction: discord.Interaction, is_100=True):
-        role100 = discord.utils.get(interaction.guild.roles, RANDOMIZER_100_ROLE)
-        role0 = discord.utils.get(interaction.guild.roles, RANDOMIZER_0_ROLE)
+        role100 = discord.utils.get(interaction.guild.roles, name=RANDOMIZER_100_ROLE)
+        role0 = discord.utils.get(interaction.guild.roles, name=RANDOMIZER_0_ROLE)
 
         if not role100:
             role100 = await interaction.guild.create_role(
@@ -41,9 +41,12 @@ class Randomizer(commands.Cog):
                 permissions=discord.Permissions()
             )
 
-        await interaction.user.add_roles(role100 if is_100 else role0)
-        await interaction.user.remove_roles(role0 if is_100 else role100)
+        member = interaction.user
+        if not isinstance(member, discord.Member):
+            member = interaction.guild.get_member(interaction.user.id)
 
+        await member.add_roles(role100 if is_100 else role0)
+        await member.remove_roles(role0 if is_100 else role100)
 
     @app_commands.command(name=RANDOMIZER_COMMAND_NAME, description=RANDOMIZER_DESCRIPTION)
     async def randomize(self, interaction: discord.Interaction):
@@ -66,17 +69,17 @@ class Randomizer(commands.Cog):
             try:
                 await interaction.user.timeout(timedelta(seconds=60))
             except Exception:
-                logging.exception("Bot doesn't have permission to time-out users, or user cannot be timed out")
+                logging.error("Bot doesn't have permission to time-out users, or user cannot be timed out", exc_info=True)
             try:
                 await self.give_role(interaction)
             except Exception:
-                logging.exception("Bot doesn't have permission to give roles")
+                logging.error("Bot doesn't have permission to give roles", exc_info=True)
         else:
             await interaction.followup.send(f"@everyone {interaction.user.mention} {RANDOMIZER_MESSAGE} {number}%")
             try:
                 await self.give_role(interaction, is_100=False)
             except Exception:
-                logging.exception("Bot doesn't have permission to give roles")
+                logging.error("Bot doesn't have permission to give roles", exc_info=True)
 
 
 async def setup(bot: commands.Bot):
