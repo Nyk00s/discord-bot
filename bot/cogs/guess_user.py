@@ -70,7 +70,7 @@ class GuessUser(commands.Cog):
 
         if messages:
             target_message = random.choice(messages)
-            timeout = 20
+            timeout = 15
             view = GuessUserQuizView(authors, target_message, self.user_repo ,timeout=timeout)
             await view.start_view(interaction)
             await view.wait()

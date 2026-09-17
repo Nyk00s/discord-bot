@@ -7,7 +7,7 @@ class GuessUserQuizView(discord.ui.View):
             authors_list: list[discord.User], 
             quiz_message: discord.Message, 
             user_repo: UserRepository, 
-            timeout=20.0
+            timeout=15.0
         ):
         super().__init__(timeout=timeout)
         self.authors_list = authors_list
@@ -38,7 +38,7 @@ class GuessUserQuizView(discord.ui.View):
 
     async def handle_button_click(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        if interaction.user.id in self.given_votes:
+        if any(user_id == interaction.user.id for user_id, _ in self.given_votes):
             return
         custom_id = interaction.data["custom_id"] 
         self.votes[custom_id] += 1
